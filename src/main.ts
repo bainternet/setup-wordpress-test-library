@@ -8,7 +8,7 @@ import { mkdirP, rmRF } from '@actions/io';
 import { coerce } from 'semver';
 import { SVNClient } from '@taiyosen/easy-svn';
 import { downloadAsText, isDir, isGHES } from './utils';
-import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion } from './wputils';
+import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion, getWordPressTestLibraryBaseUrlGithub } from './wputils';
 
 interface Inputs {
     version: string;
@@ -168,6 +168,25 @@ async function downloadTestLibrary(url: string, inputs: Inputs): Promise<void> {
     await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
 }
 
+async function downloadTestLibraryGithub( url: string, inputs: Inputs): Promise<void> {
+    
+    const dest = join(inputs.dir, 'testLib.zip');
+    try {
+        if (await findCached('WordPress Test Library', 'wordpress-tests-lib', inputs)) {
+            return;
+        }    
+
+        info(`📥 Downloading WordPress Test Library…`);
+
+        const file = await downloadTool(url, dest);
+        const targetDir = await extractZip(file, inputs.dir);
+
+       // await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
+    } finally {
+        await rmRF(dest);
+    }
+}
+
 /**
  * Configure WordPress with the given inputs.
  *
@@ -210,11 +229,14 @@ async function run(): Promise<void> {
         info(`ℹ️ Tool cache is available: ${inputs.has_toolcache ? 'yes' : 'no'}`);
 
         const wpUrl = getWordPressDownloadUrl(wpVersion);
-        const wptlUrl = getWordPressTestLibraryBaseUrl(wpVersion);
+        // const wptlUrl = getWordPressTestLibraryBaseUrl(wpVersion);
+        const wptlUrl = getWordPressTestLibraryBaseUrlGithub(wpVersion);
+        
         const workspace = process.env.GITHUB_WORKSPACE;
         try {
             process.env.GITHUB_WORKSPACE = inputs.dir;
-            await Promise.all([downloadWordPress(wpUrl, inputs), downloadTestLibrary(wptlUrl, inputs)]);
+            //await Promise.all([downloadWordPress(wpUrl, inputs), downloadTestLibrary(wptlUrl, inputs)]);
+            await Promise.all([downloadWordPress(wpUrl, inputs), downloadTestLibraryGithub(wptlUrl, inputs)]);
         } finally {
             process.env.GITHUB_WORKSPACE = workspace;
         }

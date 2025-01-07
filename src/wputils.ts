@@ -51,3 +51,13 @@ export function getWordPressTestLibraryBaseUrl(version: string): string {
     const tag = version === 'nightly' ? 'trunk' : `tags/${version}`;
     return `${SVN_URL}${tag}`;
 }
+
+/**
+ * 
+ * @param {string} version The version to get the test library base URL for.
+ * @returns {string} The test library github zip archive URL.
+ */
+export function getWordPressTestLibraryBaseUrlGithub( version: string ): string {
+    const tag = version === 'nightly' ? 'master' : `tags/${version}`;
+    return `https://github.com/WordPress/wordpress-develop/archive/refs/${tag}.zip`;
+}
