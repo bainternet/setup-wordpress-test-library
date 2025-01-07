@@ -57,7 +57,7 @@ export function getWordPressTestLibraryBaseUrl(version: string): string {
  * @param {string} version The version to get the test library base URL for.
  * @returns {string} The test library github zip archive URL.
  */
-export function getWordPressTestLibraryBaseUrlGithub( version: string ): string {
-    const tag = version === 'nightly' ? 'master' : `tags/${version}`;
+export function getWordPressTestLibraryBaseUrlGithub(version: string): string {
+    const tag = version === 'nightly' ? 'heads/trunk' : `tags/${version}`;
     return `https://github.com/WordPress/wordpress-develop/archive/refs/${tag}.zip`;
 }
