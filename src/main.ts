@@ -4,7 +4,7 @@ import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { type InputOptions, exportVariable, getInput, info, saveState, setFailed, setOutput } from '@actions/core';
 import { isFeatureAvailable as isCacheAvailable, restoreCache } from '@actions/cache';
 import { cacheDir, downloadTool, extractZip, find as findTool } from '@actions/tool-cache';
-import { mv, rmRF } from '@actions/io';
+import { mkdirP, mv, rmRF } from '@actions/io';
 import { coerce } from 'semver';
 import { isDir, isGHES } from './utils';
 // import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion } from './wputils';
@@ -176,18 +176,30 @@ async function downloadTestLibraryGithub(url: string, inputs: Inputs): Promise<v
             return;
         }
 
+        info(`ur: ${url}`);
+        info(`dest: ${dest}`);
         info(`📥 Downloading WordPress Test Library…`);
 
         const file = await downloadTool(url, dest);
-        const targetDir = await extractZip(file, `${inputs.dir}/wordpress-tests-lib-tmp`);
-        info(`ℹ️ Extracted to ${targetDir}`);
+        await extractZip(file, `${inputs.dir}/wordpress-tests-lib-tmp`);
+        const realDir = `wordpress-develop-${url.split('/').pop()?.replace('.zip', '')}`;
+        info(`file: ${file}`);
+        info(`ℹ️ Extracted to ${realDir}`);
+
+        await mkdirP(join(inputs.dir, 'wordpress-tests-lib'));
         await Promise.all([
             mv(
-                `${inputs.dir}/wordpress-tests-lib-tmp/tests/phpunit/includes`,
+                `${inputs.dir}/wordpress-tests-lib-tmp/${realDir}/tests/phpunit/includes`,
                 `${inputs.dir}/wordpress-tests-lib/includes`,
             ),
-            mv(`${inputs.dir}/wordpress-tests-lib-tmp/tests/phpunit/data/`, `${inputs.dir}/wordpress-tests-lib/data`),
-            mv(`${inputs.dir}/wordpress-tests-lib-tmp/wp-tests-config-sample.php`, `${inputs.dir}/wordpress-tests-lib`),
+            mv(
+                `${inputs.dir}/wordpress-tests-lib-tmp/${realDir}/tests/phpunit/data/`,
+                `${inputs.dir}/wordpress-tests-lib/data`,
+            ),
+            mv(
+                `${inputs.dir}/wordpress-tests-lib-tmp/${realDir}/wp-tests-config-sample.php`,
+                `${inputs.dir}/wordpress-tests-lib`,
+            ),
         ]);
 
        // await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
