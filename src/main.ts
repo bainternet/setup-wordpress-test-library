@@ -4,11 +4,11 @@ import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { type InputOptions, exportVariable, getInput, info, saveState, setFailed, setOutput } from '@actions/core';
 import { isFeatureAvailable as isCacheAvailable, restoreCache } from '@actions/cache';
 import { cacheDir, downloadTool, extractZip, find as findTool } from '@actions/tool-cache';
-import { mkdirP, rmRF } from '@actions/io';
+import { rmRF } from '@actions/io';
 import { coerce } from 'semver';
-import { SVNClient } from '@taiyosen/easy-svn';
-import { downloadAsText, isDir, isGHES } from './utils';
-import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion, getWordPressTestLibraryBaseUrlGithub } from './wputils';
+import { isDir, isGHES } from './utils';
+// import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion } from './wputils';
+import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrlGithub, resolveWordPressVersion } from './wputils';
 
 interface Inputs {
     version: string;
@@ -144,29 +144,30 @@ async function downloadWordPress(url: string, inputs: Inputs): Promise<void> {
  * @param {string} url The URL to download the WordPress Test Library from.
  * @param {Inputs} inputs The inputs for the script.
  */
-async function downloadTestLibrary(url: string, inputs: Inputs): Promise<void> {
-    if (await findCached('WordPress Test Library', 'wordpress-tests-lib', inputs)) {
-        return;
-    }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// async function downloadTestLibrary(url: string, inputs: Inputs): Promise<void> {
+//     if (await findCached('WordPress Test Library', 'wordpress-tests-lib', inputs)) {
+//         return;
+//     }
 
-    info(`📥 Downloading WordPress Test Library…`);
-    await mkdirP(join(inputs.dir, 'wordpress-tests-lib'));
-    const client = new SVNClient();
-    client.setConfig({ silent: true });
-    const [, , config] = await Promise.all([
-        client.checkout(`${url}/tests/phpunit/includes/`, `${inputs.dir}/wordpress-tests-lib/includes`),
-        client.checkout(`${url}/tests/phpunit/data/`, `${inputs.dir}/wordpress-tests-lib/data`),
-        downloadAsText(`${url}/wp-tests-config-sample.php`),
-    ]);
+//     info(`📥 Downloading WordPress Test Library…`);
+//     await mkdirP(join(inputs.dir, 'wordpress-tests-lib'));
+//     const client = new SVNClient();
+//     client.setConfig({ silent: true });
+//     const [, , config] = await Promise.all([
+//         client.checkout(`${url}/tests/phpunit/includes/`, `${inputs.dir}/wordpress-tests-lib/includes`),
+//         client.checkout(`${url}/tests/phpunit/data/`, `${inputs.dir}/wordpress-tests-lib/data`),
+//         downloadAsText(`${url}/wp-tests-config-sample.php`),
+//     ]);
 
-    await Promise.all([
-        rmRF(`${inputs.dir}/wordpress-tests-lib/includes/.svn`),
-        rmRF(`${inputs.dir}/wordpress-tests-lib/data/.svn`),
-        writeFile(join(inputs.dir, 'wordpress-tests-lib', 'wp-tests-config-sample.php'), config),
-    ]);
+//     await Promise.all([
+//         rmRF(`${inputs.dir}/wordpress-tests-lib/includes/.svn`),
+//         rmRF(`${inputs.dir}/wordpress-tests-lib/data/.svn`),
+//         writeFile(join(inputs.dir, 'wordpress-tests-lib', 'wp-tests-config-sample.php'), config),
+//     ]);
 
-    await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
-}
+//     await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
+// }
 
 async function downloadTestLibraryGithub( url: string, inputs: Inputs): Promise<void> {
     
@@ -180,7 +181,7 @@ async function downloadTestLibraryGithub( url: string, inputs: Inputs): Promise<
 
         const file = await downloadTool(url, dest);
         const targetDir = await extractZip(file, inputs.dir);
-
+        info(`ℹ️ Extracted to ${targetDir}`);
        // await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
     } finally {
         await rmRF(dest);
