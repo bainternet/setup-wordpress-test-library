@@ -4,7 +4,7 @@ import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { type InputOptions, exportVariable, getInput, info, saveState, setFailed, setOutput } from '@actions/core';
 import { isFeatureAvailable as isCacheAvailable, restoreCache } from '@actions/cache';
 import { cacheDir, downloadTool, extractZip, find as findTool } from '@actions/tool-cache';
-import { rmRF } from '@actions/io';
+import { mv, rmRF } from '@actions/io';
 import { coerce } from 'semver';
 import { isDir, isGHES } from './utils';
 // import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion } from './wputils';
@@ -169,22 +169,31 @@ async function downloadWordPress(url: string, inputs: Inputs): Promise<void> {
 //     await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
 // }
 
-async function downloadTestLibraryGithub( url: string, inputs: Inputs): Promise<void> {
-    
+async function downloadTestLibraryGithub(url: string, inputs: Inputs): Promise<void> {
     const dest = join(inputs.dir, 'testLib.zip');
     try {
         if (await findCached('WordPress Test Library', 'wordpress-tests-lib', inputs)) {
             return;
-        }    
+        }
 
         info(`📥 Downloading WordPress Test Library…`);
 
         const file = await downloadTool(url, dest);
-        const targetDir = await extractZip(file, inputs.dir);
+        const targetDir = await extractZip(file, `${inputs.dir}/wordpress-tests-lib-tmp`);
         info(`ℹ️ Extracted to ${targetDir}`);
+        await Promise.all([
+            mv(
+                `${inputs.dir}/wordpress-tests-lib-tmp/tests/phpunit/includes`,
+                `${inputs.dir}/wordpress-tests-lib/includes`,
+            ),
+            mv(`${inputs.dir}/wordpress-tests-lib-tmp/tests/phpunit/data/`, `${inputs.dir}/wordpress-tests-lib/data`),
+            mv(`${inputs.dir}/wordpress-tests-lib-tmp/wp-tests-config-sample.php`, `${inputs.dir}/wordpress-tests-lib`),
+        ]);
+
        // await cacheTool(`${inputs.dir}/wordpress-tests-lib`, 'wordpress-tests-lib', inputs);
     } finally {
         await rmRF(dest);
+        await rmRF(`${inputs.dir}/wordpress-tests-lib-tmp`);
     }
 }
 
