@@ -2,7 +2,6 @@ import { getLatestBranchVersion, getLatestVersion } from './wpapi';
 
 const NIGHTLY_BUILD_URL = 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
 const WORDPRESS_URL = 'https://wordpress.org/wordpress-';
-const SVN_URL = 'https://develop.svn.wordpress.org/';
 
 /**
  * Resolve the WordPress version.
@@ -42,18 +41,7 @@ export function getWordPressDownloadUrl(version: string): string {
 }
 
 /**
- * Get the WordPress test library base URL.
  *
- * @param {string} version The version to get the test library base URL for.
- * @returns {string} The test library base URL.
- */
-export function getWordPressTestLibraryBaseUrl(version: string): string {
-    const tag = version === 'nightly' ? 'trunk' : `tags/${version}`;
-    return `${SVN_URL}${tag}`;
-}
-
-/**
- * 
  * @param {string} version The version to get the test library base URL for.
  * @returns {string} The test library github zip archive URL.
  */
