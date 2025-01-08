@@ -4,7 +4,7 @@ import { readFile, symlink, writeFile } from 'node:fs/promises';
 import { type InputOptions, exportVariable, getInput, info, saveState, setFailed, setOutput } from '@actions/core';
 import { isFeatureAvailable as isCacheAvailable, restoreCache } from '@actions/cache';
 import { cacheDir, downloadTool, extractZip, find as findTool } from '@actions/tool-cache';
-import { mkdirP, mv, rmRF } from '@actions/io';
+import { cp, mkdirP, mv, rmRF } from '@actions/io';
 import { coerce } from 'semver';
 import { isDir, isGHES } from './utils';
 // import { getWordPressDownloadUrl, getWordPressTestLibraryBaseUrl, resolveWordPressVersion } from './wputils';
@@ -196,9 +196,9 @@ async function downloadTestLibraryGithub(url: string, inputs: Inputs): Promise<v
                 `${inputs.dir}/wordpress-tests-lib-tmp/${realDir}/tests/phpunit/data/`,
                 `${inputs.dir}/wordpress-tests-lib/data`,
             ),
-            mv(
+            cp(
                 `${inputs.dir}/wordpress-tests-lib-tmp/${realDir}/wp-tests-config-sample.php`,
-                `${inputs.dir}/wordpress-tests-lib`,
+                `${inputs.dir}/wordpress-tests-lib/wp-tests-config-sample.php`,
             ),
         ]);
 
