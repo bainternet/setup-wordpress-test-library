@@ -46,7 +46,7 @@ export function getWordPressDownloadUrl(version: string): string {
  * @returns {string} The test library github zip archive URL.
  */
 export function getWordPressTestLibraryBaseUrlGithub(version: string): string {
-    if ( version.split('.').length === 2 ) {
+    if ( `${version}`.split('.').length === 2 ) {
         version = `${version}.0`;
     }
     const tag = version === 'nightly' ? 'heads/trunk' : `tags/${version}`;
