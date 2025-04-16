@@ -126,7 +126,7 @@ async function downloadWordPress(url: string, inputs: Inputs): Promise<void> {
             return;
         }
 
-        info(`📥 Downloading WordPress…`);
+        info(`📥 Downloading WordPress… from ${url}`);
         const file = await downloadTool(url, dest);
         const targetDir = await extractZip(file, inputs.dir);
 
@@ -150,7 +150,7 @@ async function downloadTestLibraryGithub(url: string, inputs: Inputs): Promise<v
             return;
         }
 
-        info(`📥 Downloading WordPress Test Library…`);
+        info(`📥 Downloading WordPress Test Library… from ${url}`);
 
         const file = await downloadTool(url, dest);
         await extractZip(file, `${inputs.dir}/wordpress-tests-lib-tmp`);
