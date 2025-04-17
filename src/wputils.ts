@@ -37,6 +37,10 @@ export function getWordPressDownloadUrl(version: string): string {
         return NIGHTLY_BUILD_URL;
     }
 
+    if ( `${version}` === '6.8.0' ) {
+        return `${WORDPRESS_URL}6.8.zip`;
+    }
+
     return `${WORDPRESS_URL}${version}.zip`;
 }
 
